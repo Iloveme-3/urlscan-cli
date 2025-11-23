@@ -1,21 +1,20 @@
-package incident
+package channel
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
-	"github.com/urlscan/urlscan-cli/api"
 	"github.com/urlscan/urlscan-cli/pkg/utils"
 )
 
-var forkCmdExample = `  urlscan pro incident fork <incident-id>
-  echo <incident-id> | urlscan pro incident fork -`
+var updateCmdExample = `  urlscan pro channel update <channel-id> -n <name>
+  echo <channel-id> | urlscan pro channel update - -n <name>`
 
-var forkCmd = &cobra.Command{
-	Use:     "fork",
-	Short:   "Fork an incident",
-	Example: forkCmdExample,
+var updateCmd = &cobra.Command{
+	Use:     "update",
+	Short:   "Update a channel",
+	Example: updateCmdExample,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return cmd.Usage()
@@ -27,9 +26,14 @@ var forkCmd = &cobra.Command{
 			return err
 		}
 
-		err = utils.ValidateULID(id)
+		err = utils.ValidateUUID(id)
 		if err != nil {
 			return err
+		}
+
+		opts, err := mapCmdToChannelOptions(cmd)
+		if err != nil {
+			return cmd.Usage()
 		}
 
 		client, err := utils.NewAPIClient()
@@ -37,7 +41,7 @@ var forkCmd = &cobra.Command{
 			return err
 		}
 
-		result, err := client.NewRequest().Post(api.PrefixedPath(fmt.Sprintf("/user/incidents/%s/fork", id)))
+		result, err := client.UpdateChannel(id, opts...)
 		if err != nil {
 			return err
 		}
@@ -49,5 +53,7 @@ var forkCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(forkCmd)
+	setCreateOrUpdateFlags(updateCmd)
+
+	RootCmd.AddCommand(updateCmd)
 }

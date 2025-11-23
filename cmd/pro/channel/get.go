@@ -1,21 +1,20 @@
-package incident
+package channel
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
 	"github.com/urlscan/urlscan-cli/api"
 	"github.com/urlscan/urlscan-cli/pkg/utils"
 )
 
-var forkCmdExample = `  urlscan pro incident fork <incident-id>
-  echo <incident-id> | urlscan pro incident fork -`
+var getCmdExample = `  urlscan pro channel get <channel-id>
+	echo <channel-id> | urlscan pro channel get -`
 
-var forkCmd = &cobra.Command{
-	Use:     "fork",
-	Short:   "Fork an incident",
-	Example: forkCmdExample,
+var getCmd = &cobra.Command{
+	Use:     "get",
+	Short:   "Get the search results for a specific notification channel",
+	Example: getCmdExample,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return cmd.Usage()
@@ -27,7 +26,7 @@ var forkCmd = &cobra.Command{
 			return err
 		}
 
-		err = utils.ValidateULID(id)
+		err = utils.ValidateUUID(id)
 		if err != nil {
 			return err
 		}
@@ -37,7 +36,7 @@ var forkCmd = &cobra.Command{
 			return err
 		}
 
-		result, err := client.NewRequest().Post(api.PrefixedPath(fmt.Sprintf("/user/incidents/%s/fork", id)))
+		result, err := client.NewRequest().Get(api.PrefixedPath(fmt.Sprintf("/user/channels/%s", id)))
 		if err != nil {
 			return err
 		}
@@ -49,5 +48,5 @@ var forkCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(forkCmd)
+	RootCmd.AddCommand(getCmd)
 }
